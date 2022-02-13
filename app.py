@@ -4,7 +4,7 @@ import pandas as pd
 import spacy
 from spacy import displacy
 import en_core_web_sm
-nlp = spacy.load('en_core_web_md')
+ner = spacy.load('en_core_web_md')
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ def process():
 	if request.method == 'POST':
 		choice = request.form['taskoption']
 		rawtext = request.form['rawtext']
-		doc = nlp(rawtext)
+		doc = ner(rawtext)
 		d = []
 		for ent in doc.ents:
 			d.append((ent.label_, ent.text))
