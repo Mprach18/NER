@@ -1,10 +1,10 @@
 from flask import Flask,render_template,url_for,request
 import re
-import pandas as pd
-import spacy
-from spacy import displacy
-import en_core_web_sm
-ner = spacy.load('en_core_web_md')
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
+from nltk.chunk import conlltags2tree, tree2conlltags
+from pprint import pprint
 
 app = Flask(__name__)
 
@@ -13,35 +13,17 @@ def index():
 	return render_template("index.html")
 
 @app.route('/process',methods=["POST"])
-def process():
-	if request.method == 'POST':
-		type = request.form['taskoption']
-		rawtext = request.form['rawtext']
-		doc = ner(rawtext)
-		print(doc)
-		d = []
-		for ele in doc.ele:
-			d.append((ele.label_, ele.text))
-			df = pd.DataFrame(d, columns=('named entity', 'output'))
-			ORG_named_entity = df.loc[df['named entity'] == 'ORG']['output']
-			PERSON_named_entity = df.loc[df['named entity'] == 'PERSON']['output']
-			GPE_named_entity = df.loc[df['named entity'] == 'GPE']['output']
-			MONEY_named_entity = df.loc[df['named entity'] == 'MONEY']['output']
-		if type == 'organization':
-			results = ORG_named_entity
-			num_of_results = len(results)
-		elif type == 'person':
-			results = PERSON_named_entity
-			num_of_results = len(results)
-		elif type == 'location':
-			results = GPE_named_entity
-			num_of_results = len(results)
-		elif type == 'money':
-			results = MONEY_named_entity
-			num_of_results = len(results)
-		
-	
-	return render_template("index.html",results=results,num_of_results = num_of_results)
+def process():   
+    if request.method == 'POST':
+        rawtext = request.form['rawtext']
+        ner=[]
+        for sent in nltk.sent_tokenize(rawtext):
+            for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+                if hasattr(chunk, 'label'):
+                    new=(chunk.label(), ' '.join(c[0] for c in chunk))
+                    ner.append(new)
+    
+    return render_template("index.html",results=ner)
 
 
 if __name__ == '__main__':
