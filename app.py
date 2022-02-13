@@ -15,27 +15,28 @@ def index():
 @app.route('/process',methods=["POST"])
 def process():
 	if request.method == 'POST':
-		choice = request.form['taskoption']
+		type = request.form['taskoption']
 		rawtext = request.form['rawtext']
 		doc = ner(rawtext)
+		print(doc)
 		d = []
-		for ent in doc.ents:
-			d.append((ent.label_, ent.text))
+		for ele in doc.ele:
+			d.append((ele.label_, ele.text))
 			df = pd.DataFrame(d, columns=('named entity', 'output'))
 			ORG_named_entity = df.loc[df['named entity'] == 'ORG']['output']
 			PERSON_named_entity = df.loc[df['named entity'] == 'PERSON']['output']
 			GPE_named_entity = df.loc[df['named entity'] == 'GPE']['output']
 			MONEY_named_entity = df.loc[df['named entity'] == 'MONEY']['output']
-		if choice == 'organization':
+		if type == 'organization':
 			results = ORG_named_entity
 			num_of_results = len(results)
-		elif choice == 'person':
+		elif type == 'person':
 			results = PERSON_named_entity
 			num_of_results = len(results)
-		elif choice == 'geopolitical':
+		elif type == 'location':
 			results = GPE_named_entity
 			num_of_results = len(results)
-		elif choice == 'money':
+		elif type == 'money':
 			results = MONEY_named_entity
 			num_of_results = len(results)
 		
